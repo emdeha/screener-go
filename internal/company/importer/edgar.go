@@ -1,6 +1,7 @@
 package importer
 
 import (
+	"archive/zip"
 	"context"
 	"encoding/json"
 	"io"
@@ -26,6 +27,25 @@ func (e *EDGAR) ImportFile(ctx context.Context, file io.Reader) error {
 		return err
 	}
 	return e.companyManager.InsertCompany(ctx, &companyData)
+}
+
+func (e *EDGAR) ImportFilesFromArchive(
+	ctx context.Context,
+	archive *zip.Reader,
+) error {
+	for _, file := range archive.File {
+		fileReader, err := file.Open()
+		if err != nil {
+			return err
+		}
+		defer fileReader.Close()
+
+		err = e.ImportFile(ctx, fileReader)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (e *EDGAR) DoImport() error {
