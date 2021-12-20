@@ -1,0 +1,6 @@
+mode: atomic
+github.com/emdeha/screener-go/internal/company/importer/edgar.go:15.50,19.2 1 2
+github.com/emdeha/screener-go/internal/company/importer/edgar.go:21.71,25.67 2 2
+github.com/emdeha/screener-go/internal/company/importer/edgar.go:28.2,28.58 1 1
+github.com/emdeha/screener-go/internal/company/importer/edgar.go:25.67,27.3 1 1
+github.com/emdeha/screener-go/internal/company/importer/edgar.go:31.34,33.2 1 0

@@ -36,7 +36,7 @@ var _ = Describe("Store", func() {
 			}
 		})
 		JustBeforeEach(func() {
-			err = companyStore.InsertCompany(ctx, companyData)
+			err = companyStore.InsertCompany(ctx, &companyData)
 		})
 
 		It("doesn't return an error", func() {

@@ -21,7 +21,7 @@ func New(db *mongo.Client, databaseName string) *Store {
 
 func (s *Store) InsertCompany(
 	ctx context.Context,
-	companyData company.Company,
+	companyData *company.Company,
 ) error {
 	collection := s.db.Database(s.databaseName).Collection("companies")
 	var (
