@@ -8,6 +8,10 @@ lint-fix:
 test:
 	ginkgo -r -tags=integration --trace --race
 
+test-cover:
+	ginkgo -r -tags=integration --trace --race --cover --coverprofile=.coverage.txt --outputdir=.
+	go tool cover -func=.coverage.txt
+
 install-tools-globally:
 	@cat tools/tools.go | grep _ | awk -F'"' '{		\
 package = $$2;							\
