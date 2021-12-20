@@ -1,4 +1,4 @@
-package companystore_test
+package store_test
 
 import (
 	"context"
@@ -11,8 +11,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func TestCompanyStore(t *testing.T) {
+func TestStore(t *testing.T) {
 	RegisterFailHandler(Fail)
+	RunSpecs(t, "Store Suite")
 }
 
 var (
@@ -23,7 +24,7 @@ var _ = BeforeSuite(func() {
 	var err error
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
-	db, err = mongo.Connect(ctx, options.Client().ApplyURI("mongodb://local:27017"))
+	db, err = mongo.Connect(ctx, options.Client().ApplyURI("mongodb://127.0.0.1:27017"))
 	Expect(err).ToNot(HaveOccurred())
 })
 

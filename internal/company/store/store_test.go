@@ -1,29 +1,42 @@
-package companystore_test
+// +build integration
+
+package store_test
 
 import (
-	companystore "github.com/emdeha/screener-go/internal/company/store"
+	"context"
+
+	"github.com/emdeha/screener-go/internal/company"
+	"github.com/emdeha/screener-go/internal/company/store"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("CompanyStore", func() {
+var _ = Describe("Store", func() {
 	var (
-		store *companystore.Store
-		err   error
+		companyStore *store.Store
+		ctx          context.Context
+		err          error
 	)
 
 	BeforeEach(func() {
-		store = companystore.New(db)
+		ctx = context.Background()
+		companyStore = store.New(db, "screener")
 	})
 
-	When("InsertDocument", func() {
+	When("InsertCompany", func() {
 		var (
-			doc string
+			companyData company.Company
 		)
 
+		BeforeEach(func() {
+			companyData = company.Company{
+				CIK:        1750,
+				EntityName: "AAR CORP.",
+			}
+		})
 		JustBeforeEach(func() {
-			err = store.InsertDocument(doc)
+			err = companyStore.InsertCompany(ctx, companyData)
 		})
 
 		It("doesn't return an error", func() {
