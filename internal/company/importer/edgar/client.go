@@ -20,7 +20,8 @@ type Client struct {
 
 func NewEDGARClient(endpoint *url.URL, userAgent string) *Client {
 	client := &http.Client{
-		Timeout: 1 * time.Minute,
+		// We're going to download a big file, so we must have gracious timeout.
+		Timeout: 30 * time.Minute,
 	}
 
 	return &Client{
