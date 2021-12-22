@@ -30,8 +30,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Println(cfg)
-
 	insertCompany := setupInsertCompany(ctx, cfg)
 	bulkImport := setupBulkImport(ctx, cfg, insertCompany)
 
