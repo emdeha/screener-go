@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 
 	"github.com/emdeha/screener-go/internal/company"
 	"github.com/emdeha/screener-go/internal/company/companyfakes"
@@ -40,7 +41,7 @@ func writeToArchive(archiveContents []archive) (*bytes.Buffer, error) {
 
 // TODO: Something eats hard-drive when one of the tests fails. About 20Mb per
 // run. Should see why is that.
-// To reclaim space, just clean up /tmp/ginkgo*
+// To reclaim space, just clean up /tmp/ginkgo*.
 var _ = Describe("EDGAR", func() {
 	var (
 		manager       *company.Manager
@@ -168,6 +169,8 @@ var _ = Describe("EDGAR", func() {
 	})
 
 	When("DoImport", func() {
+		var getBulkDataError error
+
 		JustBeforeEach(func() {
 			var firstCompany []byte
 			firstCompany, err = json.Marshal(company.Company{
@@ -192,13 +195,29 @@ var _ = Describe("EDGAR", func() {
 			buf, err = writeToArchive(archiveContents)
 			Expect(err).ToNot(HaveOccurred())
 
-			edgarClient.GetBulkDataReturns(buf.Bytes())
+			edgarClient.GetBulkDataReturns(buf.Bytes(), getBulkDataError)
 			err = edgarImporter.DoImport(ctx)
 		})
 
-		It("succeeds", func() {
-			Expect(err).ToNot(HaveOccurred())
-			Expect(companyStore.InsertCompanyCallCount()).To(Equal(2))
+		Context("no error from GetBulkData", func() {
+			BeforeEach(func() {
+				getBulkDataError = nil
+			})
+
+			It("succeeds", func() {
+				Expect(err).ToNot(HaveOccurred())
+				Expect(companyStore.InsertCompanyCallCount()).To(Equal(2))
+			})
+		})
+
+		Context("error from GetBulkData", func() {
+			BeforeEach(func() {
+				getBulkDataError = errors.New("test")
+			})
+
+			It("returns an error", func() {
+				Expect(err).To(HaveOccurred())
+			})
 		})
 	})
 })

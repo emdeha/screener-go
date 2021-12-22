@@ -8,21 +8,23 @@ import (
 )
 
 type FakeEDGARClient struct {
-	GetBulkDataStub        func() []byte
+	GetBulkDataStub        func() ([]byte, error)
 	getBulkDataMutex       sync.RWMutex
 	getBulkDataArgsForCall []struct {
 	}
 	getBulkDataReturns struct {
 		result1 []byte
+		result2 error
 	}
 	getBulkDataReturnsOnCall map[int]struct {
 		result1 []byte
+		result2 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeEDGARClient) GetBulkData() []byte {
+func (fake *FakeEDGARClient) GetBulkData() ([]byte, error) {
 	fake.getBulkDataMutex.Lock()
 	ret, specificReturn := fake.getBulkDataReturnsOnCall[len(fake.getBulkDataArgsForCall)]
 	fake.getBulkDataArgsForCall = append(fake.getBulkDataArgsForCall, struct {
@@ -33,10 +35,10 @@ func (fake *FakeEDGARClient) GetBulkData() []byte {
 		return fake.GetBulkDataStub()
 	}
 	if specificReturn {
-		return ret.result1
+		return ret.result1, ret.result2
 	}
 	fakeReturns := fake.getBulkDataReturns
-	return fakeReturns.result1
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *FakeEDGARClient) GetBulkDataCallCount() int {
@@ -45,33 +47,36 @@ func (fake *FakeEDGARClient) GetBulkDataCallCount() int {
 	return len(fake.getBulkDataArgsForCall)
 }
 
-func (fake *FakeEDGARClient) GetBulkDataCalls(stub func() []byte) {
+func (fake *FakeEDGARClient) GetBulkDataCalls(stub func() ([]byte, error)) {
 	fake.getBulkDataMutex.Lock()
 	defer fake.getBulkDataMutex.Unlock()
 	fake.GetBulkDataStub = stub
 }
 
-func (fake *FakeEDGARClient) GetBulkDataReturns(result1 []byte) {
+func (fake *FakeEDGARClient) GetBulkDataReturns(result1 []byte, result2 error) {
 	fake.getBulkDataMutex.Lock()
 	defer fake.getBulkDataMutex.Unlock()
 	fake.GetBulkDataStub = nil
 	fake.getBulkDataReturns = struct {
 		result1 []byte
-	}{result1}
+		result2 error
+	}{result1, result2}
 }
 
-func (fake *FakeEDGARClient) GetBulkDataReturnsOnCall(i int, result1 []byte) {
+func (fake *FakeEDGARClient) GetBulkDataReturnsOnCall(i int, result1 []byte, result2 error) {
 	fake.getBulkDataMutex.Lock()
 	defer fake.getBulkDataMutex.Unlock()
 	fake.GetBulkDataStub = nil
 	if fake.getBulkDataReturnsOnCall == nil {
 		fake.getBulkDataReturnsOnCall = make(map[int]struct {
 			result1 []byte
+			result2 error
 		})
 	}
 	fake.getBulkDataReturnsOnCall[i] = struct {
 		result1 []byte
-	}{result1}
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeEDGARClient) Invocations() map[string][][]interface{} {

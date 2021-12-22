@@ -14,7 +14,7 @@ import (
 type EDGARClient interface {
 	// GetBulkData stores the whole file in memory as zip archives require to be
 	// read in full in order to be unzipped.
-	GetBulkData() []byte
+	GetBulkData() ([]byte, error)
 }
 
 type EDGAR struct {
@@ -59,11 +59,16 @@ func (e *EDGAR) ImportFilesFromArchive(
 }
 
 func (e *EDGAR) DoImport(ctx context.Context) error {
-	bulkData := e.edgarClient.GetBulkData()
+	bulkData, err := e.edgarClient.GetBulkData()
+	if err != nil {
+		return err
+	}
+
 	bulkDataAsArchive, err := zip.NewReader(
 		bytes.NewReader(bulkData), int64(len(bulkData)))
 	if err != nil {
 		return err
 	}
+
 	return e.ImportFilesFromArchive(ctx, bulkDataAsArchive)
 }
