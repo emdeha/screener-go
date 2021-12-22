@@ -15,7 +15,31 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-// TODO: Something eats hard-drive when the last test fails. About 20Mb per
+type archive struct {
+	Name, Body string
+}
+
+func writeToArchive(archiveContents []archive) (*bytes.Buffer, error) {
+	buf := new(bytes.Buffer)
+	archiveWriter := zip.NewWriter(buf)
+	for _, file := range archiveContents {
+		f, err := archiveWriter.Create(file.Name)
+		if err != nil {
+			return nil, err
+		}
+		_, err = f.Write([]byte(file.Body))
+		if err != nil {
+			return nil, err
+		}
+	}
+	err := archiveWriter.Close()
+	if err != nil {
+		return nil, err
+	}
+	return buf, nil
+}
+
+// TODO: Something eats hard-drive when one of the tests fails. About 20Mb per
 // run. Should see why is that.
 var _ = Describe("EDGAR", func() {
 	var (
@@ -73,10 +97,6 @@ var _ = Describe("EDGAR", func() {
 	})
 
 	When("ImportFilesFromArchive", func() {
-		type archive struct {
-			Name, Body string
-		}
-
 		var (
 			archiveContents []archive
 
@@ -84,15 +104,8 @@ var _ = Describe("EDGAR", func() {
 		)
 
 		JustBeforeEach(func() {
-			buf := new(bytes.Buffer)
-			archiveWriter := zip.NewWriter(buf)
-			for _, file := range archiveContents {
-				f, err := archiveWriter.Create(file.Name)
-				Expect(err).ToNot(HaveOccurred())
-				_, err = f.Write([]byte(file.Body))
-				Expect(err).ToNot(HaveOccurred())
-			}
-			err = archiveWriter.Close()
+			var buf *bytes.Buffer
+			buf, err = writeToArchive(archiveContents)
 			Expect(err).ToNot(HaveOccurred())
 
 			archiveReader, newReaderErr := zip.NewReader(
@@ -156,37 +169,28 @@ var _ = Describe("EDGAR", func() {
 	})
 
 	When("DoImport", func() {
-		type archive struct {
-			Name, Body string
-		}
-
 		JustBeforeEach(func() {
-			firstCompany, otherErr := json.Marshal(company.Company{
+			var firstCompany []byte
+			firstCompany, err = json.Marshal(company.Company{
 				CIK:        1234567,
 				EntityName: "First",
 			})
-			Expect(otherErr).ToNot(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
-			secondCompany, otherErr := json.Marshal(company.Company{
+			var secondCompany []byte
+			secondCompany, err = json.Marshal(company.Company{
 				CIK:        7654321,
 				EntityName: "Second",
 			})
-			Expect(otherErr).ToNot(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 
 			archiveContents := []archive{
 				{"CIK0001234567.json", string(firstCompany)},
 				{"CIK0007654321.json", string(secondCompany)},
 			}
 
-			buf := new(bytes.Buffer)
-			archiveWriter := zip.NewWriter(buf)
-			for _, file := range archiveContents {
-				f, err := archiveWriter.Create(file.Name)
-				Expect(err).ToNot(HaveOccurred())
-				_, err = f.Write([]byte(file.Body))
-				Expect(err).ToNot(HaveOccurred())
-			}
-			err = archiveWriter.Close()
+			var buf *bytes.Buffer
+			buf, err = writeToArchive(archiveContents)
 			Expect(err).ToNot(HaveOccurred())
 
 			edgarClient.GetBulkDataReturns(buf.Bytes())
