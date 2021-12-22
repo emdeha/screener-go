@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"io"
 
 	"github.com/emdeha/screener-go/internal/company"
 	"github.com/emdeha/screener-go/internal/company/companyfakes"
@@ -41,6 +40,7 @@ func writeToArchive(archiveContents []archive) (*bytes.Buffer, error) {
 
 // TODO: Something eats hard-drive when one of the tests fails. About 20Mb per
 // run. Should see why is that.
+// To reclaim space, just clean up /tmp/ginkgo*
 var _ = Describe("EDGAR", func() {
 	var (
 		manager       *company.Manager
@@ -60,12 +60,11 @@ var _ = Describe("EDGAR", func() {
 
 	When("ImportFile", func() {
 		var (
-			file        io.Reader
 			companyData []byte
 		)
 
 		JustBeforeEach(func() {
-			file = bytes.NewReader(companyData)
+			file := bytes.NewReader(companyData)
 			err = edgarImporter.ImportFile(ctx, file)
 		})
 
