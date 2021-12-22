@@ -15,6 +15,44 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+func zipResponse(resp http.ResponseWriter) (*bytes.Buffer, error) {
+	firstCompany := company.Company{
+		CIK:        1234567,
+		EntityName: "First",
+	}
+	fc, err := json.Marshal(firstCompany)
+	if err != nil {
+		return nil, err
+	}
+
+	secondCompany := company.Company{
+		CIK:        7654321,
+		EntityName: "Second",
+	}
+	sc, err := json.Marshal(secondCompany)
+	if err != nil {
+		return nil, err
+	}
+
+	archiveContents := []archive{
+		{"CIK0001234567.json", string(fc)},
+		{"CIK0007654321.json", string(sc)},
+	}
+
+	archiveResponse, err := writeToArchive(archiveContents)
+	if err != nil {
+		return nil, err
+	}
+
+	resp.Header().Set("content-type", "application/zip")
+	_, err = resp.Write(archiveResponse.Bytes())
+	if err != nil {
+		return nil, err
+	}
+
+	return archiveResponse, nil
+}
+
 var _ = Describe("EDGARClient", func() {
 	When("GetBulkData", func() {
 		var (
@@ -46,33 +84,9 @@ var _ = Describe("EDGARClient", func() {
 			BeforeEach(func() {
 				handler = http.HandlerFunc(
 					func(resp http.ResponseWriter, req *http.Request) {
-						firstCompany := company.Company{
-							CIK:        1234567,
-							EntityName: "First",
-						}
-						var fc []byte
-						fc, err = json.Marshal(firstCompany)
-						Expect(err).ToNot(HaveOccurred())
-
-						secondCompany := company.Company{
-							CIK:        7654321,
-							EntityName: "Second",
-						}
-						var sc []byte
-						sc, err = json.Marshal(secondCompany)
-						Expect(err).ToNot(HaveOccurred())
-
-						archiveContents := []archive{
-							{"CIK0001234567.json", string(fc)},
-							{"CIK0007654321.json", string(sc)},
-						}
-
-						archiveResponse, err = writeToArchive(archiveContents)
-						Expect(err).ToNot(HaveOccurred())
-
-						resp.Header().Set("content-type", "application/zip")
-						_, err = resp.Write(archiveResponse.Bytes())
-						Expect(err).ToNot(HaveOccurred())
+						var zipErr error
+						archiveResponse, zipErr = zipResponse(resp)
+						Expect(zipErr).ToNot(HaveOccurred())
 					},
 				)
 			})
@@ -80,6 +94,21 @@ var _ = Describe("EDGARClient", func() {
 			It("succeeds", func() {
 				Expect(err).ToNot(HaveOccurred())
 				Expect(data).To(Equal(archiveResponse.Bytes()))
+			})
+		})
+
+		Context("with error from the endpoint", func() {
+			BeforeEach(func() {
+				handler = http.HandlerFunc(
+					func(resp http.ResponseWriter, req *http.Request) {
+						http.Error(resp, "test", http.StatusUnauthorized)
+					},
+				)
+			})
+
+			It("fails with 403", func() {
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("401"))
 			})
 		})
 	})

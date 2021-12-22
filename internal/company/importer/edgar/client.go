@@ -3,6 +3,7 @@ package importer
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"net/http"
 	"net/url"
@@ -35,6 +36,10 @@ func (c *Client) GetBulkData(ctx context.Context) ([]byte, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		return nil, errors.New(resp.Status)
+	}
 
 	buf := new(bytes.Buffer)
 	_, err = io.Copy(buf, resp.Body)
