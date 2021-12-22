@@ -69,7 +69,7 @@ var _ = Describe("EDGARClient", func() {
 			var parsedURL *url.URL
 			parsedURL, err = url.Parse(server.URL)
 			Expect(err).ToNot(HaveOccurred())
-			edgarClient = importer.NewEDGARClient(parsedURL)
+			edgarClient = importer.NewEDGARClient(parsedURL, "test@test.com")
 			data, err = edgarClient.GetBulkData(context.Background())
 		})
 		JustAfterEach(func() {

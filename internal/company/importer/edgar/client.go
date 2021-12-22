@@ -13,16 +13,20 @@ import (
 type Client struct {
 	endpoint *url.URL
 	client   *http.Client
+
+	// userAgent is required by EDGAR so they can rate limit requests.
+	userAgent string
 }
 
-func NewEDGARClient(endpoint *url.URL) *Client {
+func NewEDGARClient(endpoint *url.URL, userAgent string) *Client {
 	client := &http.Client{
 		Timeout: 1 * time.Minute,
 	}
 
 	return &Client{
-		endpoint: endpoint,
-		client:   client,
+		endpoint:  endpoint,
+		client:    client,
+		userAgent: userAgent,
 	}
 }
 
@@ -31,6 +35,9 @@ func (c *Client) GetBulkData(ctx context.Context) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	c.addHeadersRequiredByEDGAR(req)
+
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
@@ -48,4 +55,10 @@ func (c *Client) GetBulkData(ctx context.Context) ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+func (c *Client) addHeadersRequiredByEDGAR(req *http.Request) {
+	req.Header.Add("User-Agent", c.userAgent)
+	req.Header.Add("Accept-Encoding", "gzip, deflate")
+	req.Header.Add("Host", "www.sec.gov")
 }
