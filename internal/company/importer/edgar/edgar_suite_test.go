@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestImporter(t *testing.T) {
+func TestEDGARImporter(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Importer Suite")
+	RunSpecs(t, "EDGAR Importer Suite")
 }

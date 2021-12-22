@@ -8,8 +8,8 @@ import (
 
 	"github.com/emdeha/screener-go/internal/company"
 	"github.com/emdeha/screener-go/internal/company/companyfakes"
-	"github.com/emdeha/screener-go/internal/company/importer"
-	"github.com/emdeha/screener-go/internal/company/importer/importerfakes"
+	importer "github.com/emdeha/screener-go/internal/company/importer/edgar"
+	"github.com/emdeha/screener-go/internal/company/importer/edgar/edgarfakes"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -45,7 +45,7 @@ var _ = Describe("EDGAR", func() {
 	var (
 		manager       *company.Manager
 		companyStore  *companyfakes.FakeCompanyStore
-		edgarClient   *importerfakes.FakeEDGARClient
+		edgarClient   *edgarfakes.FakeEDGARClient
 		edgarImporter *importer.EDGAR
 		err           error
 		ctx           context.Context
@@ -54,7 +54,7 @@ var _ = Describe("EDGAR", func() {
 	BeforeEach(func() {
 		companyStore = &companyfakes.FakeCompanyStore{}
 		manager = company.New(companyStore, edgarImporter)
-		edgarClient = &importerfakes.FakeEDGARClient{}
+		edgarClient = &edgarfakes.FakeEDGARClient{}
 		edgarImporter = importer.New(manager, edgarClient)
 	})
 
