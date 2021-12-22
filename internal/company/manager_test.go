@@ -11,17 +11,15 @@ import (
 
 var _ = Describe("Manager", func() {
 	var (
-		manager  *company.Manager
-		importer *companyfakes.FakeImporter
-		store    *companyfakes.FakeCompanyStore
-		err      error
-		ctx      context.Context
+		manager *company.Manager
+		store   *companyfakes.FakeCompanyStore
+		err     error
+		ctx     context.Context
 	)
 
 	BeforeEach(func() {
 		store = &companyfakes.FakeCompanyStore{}
-		importer = &companyfakes.FakeImporter{}
-		manager = company.New(store, importer)
+		manager = company.New(store)
 		ctx = context.Background()
 	})
 

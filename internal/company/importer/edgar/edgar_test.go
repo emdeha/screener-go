@@ -54,7 +54,7 @@ var _ = Describe("EDGAR", func() {
 
 	BeforeEach(func() {
 		companyStore = &companyfakes.FakeCompanyStore{}
-		manager = company.New(companyStore, edgarImporter)
+		manager = company.New(companyStore)
 		edgarClient = &edgarfakes.FakeEDGARClient{}
 		edgarImporter = importer.New(manager, edgarClient)
 	})

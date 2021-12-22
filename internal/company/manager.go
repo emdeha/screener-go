@@ -13,25 +13,18 @@ type Facts struct {
 	USGaap interface{} `bson:"us-gaap"`
 }
 
-//go:generate counterfeiter . Importer
-type Importer interface {
-	DoImport(ctx context.Context) error
-}
-
 //go:generate counterfeiter . CompanyStore
 type CompanyStore interface {
 	InsertCompany(_ context.Context, _ *Company) error
 }
 
 type Manager struct {
-	store    CompanyStore
-	importer Importer
+	store CompanyStore
 }
 
-func New(store CompanyStore, importer Importer) *Manager {
+func New(store CompanyStore) *Manager {
 	return &Manager{
-		store:    store,
-		importer: importer,
+		store: store,
 	}
 }
 
