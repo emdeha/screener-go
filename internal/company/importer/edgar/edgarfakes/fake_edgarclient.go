@@ -2,15 +2,17 @@
 package edgarfakes
 
 import (
+	"context"
 	"sync"
 
 	importer "github.com/emdeha/screener-go/internal/company/importer/edgar"
 )
 
 type FakeEDGARClient struct {
-	GetBulkDataStub        func() ([]byte, error)
+	GetBulkDataStub        func(context.Context) ([]byte, error)
 	getBulkDataMutex       sync.RWMutex
 	getBulkDataArgsForCall []struct {
+		arg1 context.Context
 	}
 	getBulkDataReturns struct {
 		result1 []byte
@@ -24,15 +26,16 @@ type FakeEDGARClient struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeEDGARClient) GetBulkData() ([]byte, error) {
+func (fake *FakeEDGARClient) GetBulkData(arg1 context.Context) ([]byte, error) {
 	fake.getBulkDataMutex.Lock()
 	ret, specificReturn := fake.getBulkDataReturnsOnCall[len(fake.getBulkDataArgsForCall)]
 	fake.getBulkDataArgsForCall = append(fake.getBulkDataArgsForCall, struct {
-	}{})
-	fake.recordInvocation("GetBulkData", []interface{}{})
+		arg1 context.Context
+	}{arg1})
+	fake.recordInvocation("GetBulkData", []interface{}{arg1})
 	fake.getBulkDataMutex.Unlock()
 	if fake.GetBulkDataStub != nil {
-		return fake.GetBulkDataStub()
+		return fake.GetBulkDataStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -47,10 +50,17 @@ func (fake *FakeEDGARClient) GetBulkDataCallCount() int {
 	return len(fake.getBulkDataArgsForCall)
 }
 
-func (fake *FakeEDGARClient) GetBulkDataCalls(stub func() ([]byte, error)) {
+func (fake *FakeEDGARClient) GetBulkDataCalls(stub func(context.Context) ([]byte, error)) {
 	fake.getBulkDataMutex.Lock()
 	defer fake.getBulkDataMutex.Unlock()
 	fake.GetBulkDataStub = stub
+}
+
+func (fake *FakeEDGARClient) GetBulkDataArgsForCall(i int) context.Context {
+	fake.getBulkDataMutex.RLock()
+	defer fake.getBulkDataMutex.RUnlock()
+	argsForCall := fake.getBulkDataArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *FakeEDGARClient) GetBulkDataReturns(result1 []byte, result2 error) {
