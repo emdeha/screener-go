@@ -8,6 +8,7 @@ import (
 	"io"
 
 	"github.com/emdeha/screener-go/internal/company"
+	"github.com/emdeha/screener-go/internal/company/usecases"
 )
 
 //go:generate counterfeiter . EDGARClient
@@ -18,14 +19,17 @@ type EDGARClient interface {
 }
 
 type EDGAR struct {
-	companyManager *company.Manager
-	edgarClient    EDGARClient
+	insertCompany *usecases.InsertCompany
+	edgarClient   EDGARClient
 }
 
-func New(companyManager *company.Manager, edgarClient EDGARClient) *EDGAR {
+func New(
+	insertCompany *usecases.InsertCompany,
+	edgarClient EDGARClient,
+) *EDGAR {
 	return &EDGAR{
-		companyManager: companyManager,
-		edgarClient:    edgarClient,
+		insertCompany: insertCompany,
+		edgarClient:   edgarClient,
 	}
 }
 
@@ -36,7 +40,7 @@ func (e *EDGAR) ImportFile(ctx context.Context, file io.Reader) error {
 	if err := json.NewDecoder(file).Decode(&companyData); err != nil {
 		return err
 	}
-	return e.companyManager.InsertCompany(ctx, &companyData)
+	return e.insertCompany.Do(ctx, &companyData)
 }
 
 func (e *EDGAR) ImportFilesFromArchive(

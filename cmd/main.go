@@ -9,9 +9,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/caarlos0/env"
-	"github.com/emdeha/screener-go/internal/company"
 	edgarimporter "github.com/emdeha/screener-go/internal/company/importer/edgar"
 	companystore "github.com/emdeha/screener-go/internal/company/store"
+	companyusecases "github.com/emdeha/screener-go/internal/company/usecases"
 )
 
 type Config struct {
@@ -32,8 +32,8 @@ func main() {
 
 	log.Println(cfg)
 
-	companyManager := setupCompanyManager(ctx, cfg)
-	companyImporter := setupCompanyImporter(ctx, cfg, companyManager)
+	insertCompany := setupInsertCompany(ctx, cfg)
+	companyImporter := setupCompanyImporter(ctx, cfg, insertCompany)
 
 	err = companyImporter.DoImport(ctx)
 	if err != nil {
@@ -41,20 +41,22 @@ func main() {
 	}
 }
 
-func setupCompanyManager(ctx context.Context, cfg *Config) *company.Manager {
+func setupInsertCompany(
+	ctx context.Context, cfg *Config,
+) *companyusecases.InsertCompany {
 	db, err := mongo.Connect(ctx, options.Client().ApplyURI(cfg.DBUrl))
 	if err != nil {
 		log.Fatal(err)
 	}
 	companyStore := companystore.New(db, cfg.DBName)
 
-	return company.New(companyStore)
+	return companyusecases.NewInsertCompany(companyStore)
 }
 
 func setupCompanyImporter(
 	ctx context.Context,
 	cfg *Config,
-	companyManager *company.Manager,
+	insertCompany *companyusecases.InsertCompany,
 ) *edgarimporter.EDGAR {
 	edgarEndpoint, err := url.Parse(cfg.EDGARUrl)
 	if err != nil {
@@ -62,5 +64,5 @@ func setupCompanyImporter(
 	}
 	edgarClient := edgarimporter.NewEDGARClient(
 		edgarEndpoint, cfg.EDGARUserAgent)
-	return edgarimporter.New(companyManager, edgarClient)
+	return edgarimporter.New(insertCompany, edgarClient)
 }

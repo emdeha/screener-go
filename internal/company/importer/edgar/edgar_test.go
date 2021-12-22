@@ -8,9 +8,10 @@ import (
 	"errors"
 
 	"github.com/emdeha/screener-go/internal/company"
-	"github.com/emdeha/screener-go/internal/company/companyfakes"
 	edgarimporter "github.com/emdeha/screener-go/internal/company/importer/edgar"
 	"github.com/emdeha/screener-go/internal/company/importer/edgar/edgarfakes"
+	"github.com/emdeha/screener-go/internal/company/usecases"
+	"github.com/emdeha/screener-go/internal/company/usecases/usecasesfakes"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -44,8 +45,8 @@ func writeToArchive(archiveContents []archive) (*bytes.Buffer, error) {
 // To reclaim space, just clean up /tmp/ginkgo*.
 var _ = Describe("EDGAR", func() {
 	var (
-		manager       *company.Manager
-		companyStore  *companyfakes.FakeCompanyStore
+		insertCompany *usecases.InsertCompany
+		companyStore  *usecasesfakes.FakeCompanyStore
 		edgarClient   *edgarfakes.FakeEDGARClient
 		edgarImporter *edgarimporter.EDGAR
 		err           error
@@ -53,10 +54,10 @@ var _ = Describe("EDGAR", func() {
 	)
 
 	BeforeEach(func() {
-		companyStore = &companyfakes.FakeCompanyStore{}
-		manager = company.New(companyStore)
+		companyStore = &usecasesfakes.FakeCompanyStore{}
+		insertCompany = usecases.NewInsertCompany(companyStore)
 		edgarClient = &edgarfakes.FakeEDGARClient{}
-		edgarImporter = edgarimporter.New(manager, edgarClient)
+		edgarImporter = edgarimporter.New(insertCompany, edgarClient)
 	})
 
 	When("ImportFile", func() {

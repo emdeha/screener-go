@@ -5,7 +5,7 @@ import (
 	"context"
 	"sync"
 
-	importer "github.com/emdeha/screener-go/internal/company/importer/edgar"
+	edgarimporter "github.com/emdeha/screener-go/internal/company/importer/edgar"
 )
 
 type FakeEDGARClient struct {
@@ -113,4 +113,4 @@ func (fake *FakeEDGARClient) recordInvocation(key string, args []interface{}) {
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ importer.EDGARClient = new(FakeEDGARClient)
+var _ edgarimporter.EDGARClient = new(FakeEDGARClient)
