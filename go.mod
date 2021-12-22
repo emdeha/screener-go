@@ -3,6 +3,7 @@ module github.com/emdeha/screener-go
 go 1.16
 
 require (
+	github.com/caarlos0/env v3.5.0+incompatible
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.4.1
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.17.0
