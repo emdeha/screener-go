@@ -33,9 +33,9 @@ func main() {
 	log.Println(cfg)
 
 	insertCompany := setupInsertCompany(ctx, cfg)
-	companyImporter := setupCompanyImporter(ctx, cfg, insertCompany)
+	bulkImport := setupBulkImport(ctx, cfg, insertCompany)
 
-	err = companyImporter.DoImport(ctx)
+	err = bulkImport.Do(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -53,16 +53,18 @@ func setupInsertCompany(
 	return companyusecases.NewInsertCompany(companyStore)
 }
 
-func setupCompanyImporter(
+func setupBulkImport(
 	ctx context.Context,
 	cfg *Config,
 	insertCompany *companyusecases.InsertCompany,
-) *edgarimporter.EDGAR {
+) *companyusecases.BulkImport {
 	edgarEndpoint, err := url.Parse(cfg.EDGARUrl)
 	if err != nil {
 		log.Fatal(err)
 	}
 	edgarClient := edgarimporter.NewEDGARClient(
 		edgarEndpoint, cfg.EDGARUserAgent)
-	return edgarimporter.New(insertCompany, edgarClient)
+	companyImporter := edgarimporter.New(insertCompany, edgarClient)
+
+	return companyusecases.NewBulkImport(companyImporter)
 }
