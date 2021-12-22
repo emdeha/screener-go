@@ -10,7 +10,7 @@ import (
 
 	"github.com/emdeha/screener-go/internal/company"
 	edgarimporter "github.com/emdeha/screener-go/internal/company/importer/edgar"
-	"github.com/emdeha/screener-go/internal/company/store"
+	companystore "github.com/emdeha/screener-go/internal/company/store"
 )
 
 func main() {
@@ -32,7 +32,7 @@ func setupCompanyManager(ctx context.Context) *company.Manager {
 	if err != nil {
 		log.Fatal(err)
 	}
-	companyStore := store.New(db, dbName)
+	companyStore := companystore.New(db, dbName)
 
 	return company.New(companyStore)
 }

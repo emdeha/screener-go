@@ -1,27 +1,27 @@
 // +build integration
 
-package store_test
+package companystore_test
 
 import (
 	"context"
 
 	"github.com/emdeha/screener-go/internal/company"
-	"github.com/emdeha/screener-go/internal/company/store"
+	companystore "github.com/emdeha/screener-go/internal/company/store"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Store", func() {
+var _ = Describe("Company Store", func() {
 	var (
-		companyStore *store.Store
+		companyStore *companystore.Store
 		ctx          context.Context
 		err          error
 	)
 
 	BeforeEach(func() {
 		ctx = context.Background()
-		companyStore = store.New(db, dbName)
+		companyStore = companystore.New(db, dbName)
 	})
 
 	When("InsertCompany", func() {
