@@ -1,4 +1,4 @@
-package importer_test
+package edgarimporter_test
 
 import (
 	"bytes"
@@ -8,7 +8,7 @@ import (
 	"net/url"
 
 	"github.com/emdeha/screener-go/internal/company"
-	importer "github.com/emdeha/screener-go/internal/company/importer/edgar"
+	edgarimporter "github.com/emdeha/screener-go/internal/company/importer/edgar"
 	"golang.org/x/net/context"
 
 	. "github.com/onsi/ginkgo"
@@ -60,7 +60,7 @@ var _ = Describe("EDGARClient", func() {
 			err         error
 			handler     http.Handler
 			server      *httptest.Server
-			edgarClient *importer.Client
+			edgarClient *edgarimporter.Client
 		)
 
 		JustBeforeEach(func() {
@@ -69,7 +69,7 @@ var _ = Describe("EDGARClient", func() {
 			var parsedURL *url.URL
 			parsedURL, err = url.Parse(server.URL)
 			Expect(err).ToNot(HaveOccurred())
-			edgarClient = importer.NewEDGARClient(parsedURL, "test@test.com")
+			edgarClient = edgarimporter.NewEDGARClient(parsedURL, "test@test.com")
 			data, err = edgarClient.GetBulkData(context.Background())
 		})
 		JustAfterEach(func() {

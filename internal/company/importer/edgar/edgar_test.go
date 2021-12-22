@@ -1,4 +1,4 @@
-package importer_test
+package edgarimporter_test
 
 import (
 	"archive/zip"
@@ -9,7 +9,7 @@ import (
 
 	"github.com/emdeha/screener-go/internal/company"
 	"github.com/emdeha/screener-go/internal/company/companyfakes"
-	importer "github.com/emdeha/screener-go/internal/company/importer/edgar"
+	edgarimporter "github.com/emdeha/screener-go/internal/company/importer/edgar"
 	"github.com/emdeha/screener-go/internal/company/importer/edgar/edgarfakes"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -47,7 +47,7 @@ var _ = Describe("EDGAR", func() {
 		manager       *company.Manager
 		companyStore  *companyfakes.FakeCompanyStore
 		edgarClient   *edgarfakes.FakeEDGARClient
-		edgarImporter *importer.EDGAR
+		edgarImporter *edgarimporter.EDGAR
 		err           error
 		ctx           context.Context
 	)
@@ -56,7 +56,7 @@ var _ = Describe("EDGAR", func() {
 		companyStore = &companyfakes.FakeCompanyStore{}
 		manager = company.New(companyStore)
 		edgarClient = &edgarfakes.FakeEDGARClient{}
-		edgarImporter = importer.New(manager, edgarClient)
+		edgarImporter = edgarimporter.New(manager, edgarClient)
 	})
 
 	When("ImportFile", func() {

@@ -1,4 +1,4 @@
-package importer
+package edgarimporter
 
 import (
 	"bytes"

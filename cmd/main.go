@@ -9,7 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/emdeha/screener-go/internal/company"
-	importer "github.com/emdeha/screener-go/internal/company/importer/edgar"
+	edgarimporter "github.com/emdeha/screener-go/internal/company/importer/edgar"
 	"github.com/emdeha/screener-go/internal/company/store"
 )
 
@@ -40,13 +40,13 @@ func setupCompanyManager(ctx context.Context) *company.Manager {
 func setupCompanyImporter(
 	ctx context.Context,
 	companyManager *company.Manager,
-) *importer.EDGAR {
+) *edgarimporter.EDGAR {
 	edgarEndpoint, err := url.Parse(
 		"https://www.sec.gov/Archives/edgar/daily-index/xbrl/companyfacts.zip")
 	if err != nil {
 		log.Fatal(err)
 	}
-	userAgent := "cpi.cecko@gmail.com"
-	edgarClient := importer.NewEDGARClient(edgarEndpoint, userAgent)
-	return importer.New(companyManager, edgarClient)
+	userAgent := "test@test.com"
+	edgarClient := edgarimporter.NewEDGARClient(edgarEndpoint, userAgent)
+	return edgarimporter.New(companyManager, edgarClient)
 }
