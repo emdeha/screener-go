@@ -17,7 +17,8 @@ func TestStore(t *testing.T) {
 }
 
 var (
-	db *mongo.Client
+	db     *mongo.Client
+	dbName string
 )
 
 var _ = BeforeSuite(func() {
@@ -26,8 +27,12 @@ var _ = BeforeSuite(func() {
 	defer cancel()
 	db, err = mongo.Connect(ctx, options.Client().ApplyURI("mongodb://127.0.0.1:27017"))
 	Expect(err).ToNot(HaveOccurred())
+
+	dbName = "screener-test"
 })
 
 var _ = AfterSuite(func() {
+	err := db.Database(dbName).Drop(context.Background())
+	Expect(err).ToNot(HaveOccurred())
 	Expect(db.Disconnect(context.Background()))
 })

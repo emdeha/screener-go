@@ -21,7 +21,7 @@ var _ = Describe("Store", func() {
 
 	BeforeEach(func() {
 		ctx = context.Background()
-		companyStore = store.New(db, "screener")
+		companyStore = store.New(db, dbName)
 	})
 
 	When("InsertCompany", func() {

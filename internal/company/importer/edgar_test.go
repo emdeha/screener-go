@@ -10,14 +10,18 @@ import (
 	"github.com/emdeha/screener-go/internal/company"
 	"github.com/emdeha/screener-go/internal/company/companyfakes"
 	"github.com/emdeha/screener-go/internal/company/importer"
+	"github.com/emdeha/screener-go/internal/company/importer/importerfakes"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
+// TODO: Something eats hard-drive when the last test fails. About 20Mb per
+// run. Should see why is that.
 var _ = Describe("EDGAR", func() {
 	var (
 		manager       *company.Manager
 		companyStore  *companyfakes.FakeCompanyStore
+		edgarClient   *importerfakes.FakeEDGARClient
 		edgarImporter *importer.EDGAR
 		err           error
 		ctx           context.Context
@@ -26,7 +30,8 @@ var _ = Describe("EDGAR", func() {
 	BeforeEach(func() {
 		companyStore = &companyfakes.FakeCompanyStore{}
 		manager = company.New(companyStore, edgarImporter)
-		edgarImporter = importer.New(manager)
+		edgarClient = &importerfakes.FakeEDGARClient{}
+		edgarImporter = importer.New(manager, edgarClient)
 	})
 
 	When("ImportFile", func() {
@@ -73,8 +78,6 @@ var _ = Describe("EDGAR", func() {
 		}
 
 		var (
-			archiveWriter   *zip.Writer
-			archiveReader   *zip.Reader
 			archiveContents []archive
 
 			firstCompany, secondCompany company.Company
@@ -82,7 +85,7 @@ var _ = Describe("EDGAR", func() {
 
 		JustBeforeEach(func() {
 			buf := new(bytes.Buffer)
-			archiveWriter = zip.NewWriter(buf)
+			archiveWriter := zip.NewWriter(buf)
 			for _, file := range archiveContents {
 				f, err := archiveWriter.Create(file.Name)
 				Expect(err).ToNot(HaveOccurred())
@@ -92,8 +95,9 @@ var _ = Describe("EDGAR", func() {
 			err = archiveWriter.Close()
 			Expect(err).ToNot(HaveOccurred())
 
-			archiveReader, err = zip.NewReader(bytes.NewReader(buf.Bytes()), int64(len(buf.Bytes())))
-			Expect(err).ToNot(HaveOccurred())
+			archiveReader, newReaderErr := zip.NewReader(
+				bytes.NewReader(buf.Bytes()), int64(len(buf.Bytes())))
+			Expect(newReaderErr).ToNot(HaveOccurred())
 			err = edgarImporter.ImportFilesFromArchive(ctx, archiveReader)
 		})
 
@@ -148,6 +152,50 @@ var _ = Describe("EDGAR", func() {
 			It("fails", func() {
 				Expect(err).To(HaveOccurred())
 			})
+		})
+	})
+
+	When("DoImport", func() {
+		type archive struct {
+			Name, Body string
+		}
+
+		JustBeforeEach(func() {
+			firstCompany, otherErr := json.Marshal(company.Company{
+				CIK:        1234567,
+				EntityName: "First",
+			})
+			Expect(otherErr).ToNot(HaveOccurred())
+
+			secondCompany, otherErr := json.Marshal(company.Company{
+				CIK:        7654321,
+				EntityName: "Second",
+			})
+			Expect(otherErr).ToNot(HaveOccurred())
+
+			archiveContents := []archive{
+				{"CIK0001234567.json", string(firstCompany)},
+				{"CIK0007654321.json", string(secondCompany)},
+			}
+
+			buf := new(bytes.Buffer)
+			archiveWriter := zip.NewWriter(buf)
+			for _, file := range archiveContents {
+				f, err := archiveWriter.Create(file.Name)
+				Expect(err).ToNot(HaveOccurred())
+				_, err = f.Write([]byte(file.Body))
+				Expect(err).ToNot(HaveOccurred())
+			}
+			err = archiveWriter.Close()
+			Expect(err).ToNot(HaveOccurred())
+
+			edgarClient.GetBulkDataReturns(buf.Bytes())
+			err = edgarImporter.DoImport(ctx)
+		})
+
+		It("succeeds", func() {
+			Expect(err).ToNot(HaveOccurred())
+			Expect(companyStore.InsertCompanyCallCount()).To(Equal(2))
 		})
 	})
 })

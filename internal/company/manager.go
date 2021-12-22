@@ -15,7 +15,7 @@ type Facts struct {
 
 //go:generate counterfeiter . Importer
 type Importer interface {
-	DoImport() error
+	DoImport(ctx context.Context) error
 }
 
 //go:generate counterfeiter . CompanyStore

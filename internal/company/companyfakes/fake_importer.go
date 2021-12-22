@@ -2,15 +2,17 @@
 package companyfakes
 
 import (
+	"context"
 	"sync"
 
 	"github.com/emdeha/screener-go/internal/company"
 )
 
 type FakeImporter struct {
-	DoImportStub        func() error
+	DoImportStub        func(context.Context) error
 	doImportMutex       sync.RWMutex
 	doImportArgsForCall []struct {
+		arg1 context.Context
 	}
 	doImportReturns struct {
 		result1 error
@@ -22,15 +24,16 @@ type FakeImporter struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeImporter) DoImport() error {
+func (fake *FakeImporter) DoImport(arg1 context.Context) error {
 	fake.doImportMutex.Lock()
 	ret, specificReturn := fake.doImportReturnsOnCall[len(fake.doImportArgsForCall)]
 	fake.doImportArgsForCall = append(fake.doImportArgsForCall, struct {
-	}{})
-	fake.recordInvocation("DoImport", []interface{}{})
+		arg1 context.Context
+	}{arg1})
+	fake.recordInvocation("DoImport", []interface{}{arg1})
 	fake.doImportMutex.Unlock()
 	if fake.DoImportStub != nil {
-		return fake.DoImportStub()
+		return fake.DoImportStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
@@ -45,10 +48,17 @@ func (fake *FakeImporter) DoImportCallCount() int {
 	return len(fake.doImportArgsForCall)
 }
 
-func (fake *FakeImporter) DoImportCalls(stub func() error) {
+func (fake *FakeImporter) DoImportCalls(stub func(context.Context) error) {
 	fake.doImportMutex.Lock()
 	defer fake.doImportMutex.Unlock()
 	fake.DoImportStub = stub
+}
+
+func (fake *FakeImporter) DoImportArgsForCall(i int) context.Context {
+	fake.doImportMutex.RLock()
+	defer fake.doImportMutex.RUnlock()
+	argsForCall := fake.doImportArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *FakeImporter) DoImportReturns(result1 error) {

@@ -2,6 +2,7 @@ package importer
 
 import (
 	"archive/zip"
+	"bytes"
 	"context"
 	"encoding/json"
 	"io"
@@ -9,13 +10,22 @@ import (
 	"github.com/emdeha/screener-go/internal/company"
 )
 
-type EDGAR struct {
-	companyManager *company.Manager
+//go:generate counterfeiter . EDGARClient
+type EDGARClient interface {
+	// GetBulkData stores the whole file in memory as zip archives require to be
+	// read in full in order to be unzipped.
+	GetBulkData() []byte
 }
 
-func New(companyManager *company.Manager) *EDGAR {
+type EDGAR struct {
+	companyManager *company.Manager
+	edgarClient    EDGARClient
+}
+
+func New(companyManager *company.Manager, edgarClient EDGARClient) *EDGAR {
 	return &EDGAR{
 		companyManager: companyManager,
+		edgarClient:    edgarClient,
 	}
 }
 
@@ -48,6 +58,12 @@ func (e *EDGAR) ImportFilesFromArchive(
 	return nil
 }
 
-func (e *EDGAR) DoImport() error {
-	return nil
+func (e *EDGAR) DoImport(ctx context.Context) error {
+	bulkData := e.edgarClient.GetBulkData()
+	bulkDataAsArchive, err := zip.NewReader(
+		bytes.NewReader(bulkData), int64(len(bulkData)))
+	if err != nil {
+		return err
+	}
+	return e.ImportFilesFromArchive(ctx, bulkDataAsArchive)
 }
